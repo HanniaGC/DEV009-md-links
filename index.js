@@ -1,21 +1,34 @@
-const mdLinks = require("md-links");
-const fs = require('fs');
+const functions = require('./data.js');
 
-const mdLinks = (path, options) => {
+const mdLinks = (path, validate) => {
     return new Promise((resolve, reject) => {
-        //la ruta existe
-        if (fs.existsSync(route)) {// si es es absoluta
-            resolve
-            //¿La ruta es absoluta?
+        //Existe la ruta?
+        if (functions.isAbsolutePath(path)) {
+            if (functions.pathExist(path)) {
+                if (!functions.isMarkdownFile(path)) {
+                    reject("El archivo no es un archivo Markdown.");
+                    return;
+                }
+                
+                functions.readMarkdownFile(path)
+                    .then(content => {
+                        const links = functions.findLinksInMarkdown(content);
+                        if (links.length > 0) {
+                            resolve(links); //Termina la promesa resuelta con los enlaces encontrados
+                        } else {
+                            reject("No se encontraron enlaces en el archivo.");
+                        }
+                    })
+                    .catch(error => {
+                        reject(`Error al leer el archivo: ${error}`);
+                    });
+            } else {
+                console.log("La ruta no existe");
+            }
         } else {
-            //No existe se rechaza la promesa.
-            reject('la ruta no existe');
+            reject("La ruta no es absoluta");
         }
-
     })
 }
 
-
-module.exports = () => {
-    mdLinks
-};
+module.exports = mdLinks;
