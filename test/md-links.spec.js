@@ -1,38 +1,34 @@
-const mdLinks = require('../index.js');
-const functions = require('../data.js')
-
+const mdLinks = require('../index.js'); 
 
 describe('mdLinks', () => {
-  it('Deberia devolver una promesa', () => {
-    const result = mdLinks();
-    expect(result instanceof Promise).toBe(true);
+  it('debería resolver con los enlaces encontrados cuando no se valida', () => {
+    const path = 'C:\\Users\\danie\\Documents\\HanniaLaboratoria\\DEV009-md-links\\ejemplo.md'; // Ruta a un archivo Markdown con enlaces
+    const validate = false; // No se realiza validación
 
-  })
-});
-
-// Mock de las funciones 
-functions.isAbsolutePath = jest.fn().mockReturnValue(true);
-functions.pathExist = jest.fn().mockReturnValue(true);
-functions.isMarkdownFile = jest.fn().mockReturnValue(true);
-functions.readMarkdownFile = jest.fn().mockResolvedValue(`
-  [Enlace 1](https://www.ejemplo1.com)
-  [Enlace 2](https://www.ejemplo2.com)
-  [Enlace 3](https://www.ejemplo3.com)
-`);
-functions.findLinksInMarkdown = jest.fn().mockReturnValue([
-  { text: 'Enlace 1', href: 'https://www.ejemplo1.com' },
-  { text: 'Enlace 2', href: 'https://www.ejemplo2.com' },
-  { text: 'Enlace 3', href: 'https://www.ejemplo3.com' },
-]);
-
-describe('mdLinks', () => {
-  it('debería resolver un arreglo con 3 links para un archivo .md con 3 links', () => {
-    return mdLinks('miArchivo.md').then((result) => {
-      expect(result).toEqual([
-        { text: 'Enlace 1', href: 'https://www.ejemplo1.com' },
-        { text: 'Enlace 2', href: 'https://www.ejemplo2.com' },
-        { text: 'Enlace 3', href: 'https://www.ejemplo3.com' },
-      ]);
+    return mdLinks(path, validate).then((result) => {
+      //Result es un arreglo de enlaces
+      expect(Array.isArray(result)).toBe(true);
     });
   });
+//un test para el contenido de lo que retorna
+  it('debería rechazar con un mensaje si no se encuentra ningún enlace', () => {
+    const path = 'C:\\Users\\danie\\Documents\\HanniaLaboratoria\\DEV009-md-links\\ejemplo.m'; // Ruta a un archivo Markdown sin enlaces
+
+    return mdLinks(path).catch((error) => {
+      expect(error).toBe("La ruta no existe");
+      //testear los otros 
+    });
+  });
+
+  it('debería resolver con los enlaces encontrados y validados', () => {
+    const path = 'C:\\Users\\danie\\Documents\\HanniaLaboratoria\\DEV009-md-links\\ejemplo.md'; // Ruta a un archivo Markdown con enlaces
+    const validate = true; // Se realiza validación
+
+    return mdLinks(path, validate).then((result) => {
+      // Arreglo de enlaces validados
+      expect(Array.isArray(result)).toBe(true);
+    });
+  });
+
+//otro it para saber que es lo  que retorna
 });

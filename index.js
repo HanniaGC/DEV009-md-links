@@ -1,34 +1,62 @@
-const functions = require('./data.js');
+const functions = require("./data.js");
 
-const mdLinks = (path, validate) => {
-    return new Promise((resolve, reject) => {
-        //Existe la ruta?
-        if (functions.isAbsolutePath(path)) {
-            if (functions.pathExist(path)) {
-                if (!functions.isMarkdownFile(path)) {
-                    reject("El archivo no es un archivo Markdown.");
-                    return;
-                }
-                
-                functions.readMarkdownFile(path)
-                    .then(content => {
-                        const links = functions.findLinksInMarkdown(content);
-                        if (links.length > 0) {
-                            resolve(links); //Termina la promesa resuelta con los enlaces encontrados
-                        } else {
-                            reject("No se encontraron enlaces en el archivo.");
-                        }
-                    })
-                    .catch(error => {
-                        reject(`Error al leer el archivo: ${error}`);
-                    });
-            } else {
-                console.log("La ruta no existe");
-            }
-        } else {
-            reject("La ruta no es absoluta");
+/*
+const mdLinks = (path, validate = false) => {
+  return new Promise((resolve, reject) => {
+   //la ruta es absoluta?
+    if (functions.isAbsolutePath(path)) { //debe ejecutarse no
+       //Existe la ruta?
+      if (functions.pathExist(path)) {
+        //la ruta es markdown?
+        if (!functions.isMarkdownFile(path)) {//si no es
+          reject("El archivo no es un archivo Markdown."); // Hacerle test***
+        } else { //pero si es
+          functions
+            .readMarkdownFile(path)
+            .then((content) => {
+              const links = functions.findLinksInMarkdown(content, path);
+              if (validate) {
+                functions.validateLink(links).then(result => resolve(result))
+              } else {
+                resolve(links);
+                // Resuelve la promesa con los enlaces encontrados
+              }
+            })
+            .catch((error) => {
+              reject(`Error al leer el archivo 1: ${error}`);
+            });
         }
-    })
-}
+      } else {
+        reject("La ruta no existe");
+      }
+    }
+  });
+};*/
+const mdLinks = (directory, validate = false) => {
+  return new Promise((resolve, reject) => {
+    if (functions.isAbsolutePath(directory)) {
+      if (functions.pathExist(directory)) {
+        functions
+          .extractLinksFromDirectory(directory)
+          .then((links) => {
+            if (validate) {
+              functions.validateLink(links).then((result) => resolve(result));
+            } else {
+              resolve(links);
+            }
+          })
+          .catch((error) => {
+            reject(`Error al extraer los enlaces: ${error}`);
+          });
+      } else {
+        reject("El directorio no existe");
+      }
+    } else {
+      reject("La ruta debe ser absoluta");
+    }
+  });
+};
+
+module.exports = mdLinks;
 
 module.exports = mdLinks;

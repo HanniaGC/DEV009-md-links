@@ -1,9 +1,18 @@
 const mdLinks = require('./index.js');
 
-mdLinks('./ejemplo.md')
-.then ((resolve)=>{
- console.log(resolve);
+
+mdLinks('./Directorio', true) //true para validar enlaces
+.then ((links)=>{
+ console.log(links);
 })
 .catch((reject)=>{
     console.log(reject);
 })
+
+/*mdLinks('ejemplo.md', false) //false para no validar enlaces, solo obtenerlos
+.then ((links)=>{
+ console.log(links);
+})
+.catch((reject)=>{
+    console.log(reject);
+})*/
