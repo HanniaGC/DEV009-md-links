@@ -59,8 +59,9 @@ function getAllMarkdownFilesInDirectory(directoryPath) {
   return new Promise((resolve, reject) => {
     fs.readdir(directoryPath, (err, fileNames) => {
       if (err) {
-        reject(`Error: ${err}`);
+        reject('Esto es un archivo');
       } else {
+        console.log('Esto es un dirtectorio')
         const markdownFiles = fileNames.filter((fileName) => {
           const filePath = path.join(directoryPath, fileName);
           return isMarkdownFile(filePath);
@@ -111,14 +112,19 @@ const validateLink = (links) => {
             href: link.href,
             text: link.text,
             file: link.file,
-            status: error.status,
+            status: response.status,
             valid: "fail",
           };
         }
       })
       .catch((error) => {
-        link.status = error.status === undefined ? "N/A" : error.status;
-        link.ok = "fail";
+        return {
+          href: link.href,
+          text: link.text,
+          file: link.file,
+          status: error.status === undefined ? "N/A" : error.status,
+          valid: "fail",
+        };
       });
   });
   //console.log(linkvalid, 'mensaje')
