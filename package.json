@@ -1,6 +1,16 @@
 {
   "name": "md-links",
   "version": "0.1.0",
+  "description": "Modulo para validar links de archivos markdown",
+  "main": "index.js",
+  "author": {
+    "name": "Hannia Guerrero",
+    "url": "https://www.linkedin.com/in/hannia-guerrero-carrillo-585842288/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HanniaGC/DEV009-md-links"
+  },
   "engines": {
     "node": ">=16.x"
   },
@@ -16,5 +26,8 @@
   },
   "dependencies": {
     "axios": "^1.5.0"
+  },
+  "bin":{
+    "mdLinks": "./cli.js"
   }
 }

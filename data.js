@@ -91,7 +91,7 @@ function extractLinksFromDirectory(directoryPath) {
     console.error(error);
     throw error;
   });
-}
+};
 //HITO 2
 //Funcion para validar con fetch un enlace
 const validateLink = (links) => {
@@ -105,7 +105,7 @@ const validateLink = (links) => {
             href: link.href,
             file: link.file,
             status: response.status,
-            statusText: "ok",
+            valid: "ok",
           };
         } else {
           return {
