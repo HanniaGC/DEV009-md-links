@@ -33,7 +33,7 @@ desde el terminal.
 Para instalar mdLinks, ejecuta el siguiente comando en tu terminal:
 
 ```bash
-npm install -g mdlinks
+npm install mdlinks
 ```
 
 ## 4. Guía de uso
@@ -51,16 +51,23 @@ mdlinks <Ruta-del-archivo-que-deseas-analizar> [--validate] [--stats]
 ```shell
 mdlinks example.md
 ```
+![milestones](./1ejemplo.png)
 - Analizar enlaces en un directorio y validarlos:
 ```shell
 mdlinks ./docs --validate
 ```
+![milestones](./2validate.png)
+
 Analizar enlaces en un directorio, validarlos y mostrar estadísticas:
 ```shell
 mdlinks ./docs --validate --stats
 ```
+![milestones](./validate-stats.png)
 ## Resultados
 Para cada enlace encontrado, mdLinks mostrará el texto del enlace, la URL y el archivo en el que se encontró.
 Si se usa la opción --validate, mdLinks también mostrará el estado de validez de cada enlace.
 
 ## 5. Proceso del proyecto
+ 
+Para este proyecto se ultilizo el siguiente Diagrama de Flujo.
+![milestones](./Pseudocodigo.png)
