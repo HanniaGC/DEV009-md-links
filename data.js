@@ -1,5 +1,7 @@
-const fs = require('fs');
-const path = require('node:path');
+const fs = require("fs");
+const path = require("node:path");
+const axios = require("axios");
+
 
 //buscar los enlases con la Regexp
 const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
@@ -12,63 +14,130 @@ function pathExist(filePath) {
 //una funcion que me la transforme de relativa en absoluta
 function isAbsolutePath(filePath) {
   if (!path.isAbsolute(filePath)) {
-    filePath = path.resolve(filePath)
+    filePath = path.resolve(filePath);
   }
   return filePath;
 }
 
-//verifica si el archivo es markdown 
+//verifica si el archivo es markdown
 function isMarkdownFile(filePath) {
   const extname = path.extname(filePath).toLowerCase();
-  return ['.md', '.markdown', '.mdown'].includes(extname);
+  return [".md", ".markdown", ".mdown"].includes(extname);
 }
 
 //Funcion para leer el archivo y buscar rutas
 //utf8 sirve para codificar caracteres y se interpretan para poder leerlos
 function readMarkdownFile(filePath) {
   return new Promise((resolve, reject) => {
-    fs.readFile(filePath, 'utf8', (err, data) => {
+    fs.readFile(filePath, "utf8", (err, data) => {
       if (!err) {
-       resolve(data);
+        resolve(data);
       } else {
-        reject('Error: ${err}')
+        reject("Error: ${err}");
       }
     });
   });
 }
 
 //guarda los links en un arreglo para armar los objetos
-function findLinksInMarkdown(content) {
+function findLinksInMarkdown(content, filePath) {
   const links = [];
-  let match;
 
+  let match;
   while ((match = linkRegex.exec(content)) !== null) {
-    const text = match[0]; // Texto del enlace
-    const href = match[1]; // URL del enlace
-    const file = match[2]; // Ruta del archivo donde se encontro
-    links.push({ text, href, file });
+    const text = match[1]; // Texto del enlace
+    const href = match[2]; // URL del enlace
+    links.push({ text, href, file: filePath });
   }
   return links;
 }
 
-// verificar si se encuentran links y mostrarls
-function printLinks(links) {
-  if (links.length > 0) {
-    console.log('Enlaces encontrados:');
-    links.forEach((link, index) => {
-      console.log(`[${index + 1}] Texto: ${link.text}, URL: ${link.href}`);
+//Hito 3
+const directoryPath = './Directorio';
+
+function getAllMarkdownFilesInDirectory(directoryPath) {
+  return new Promise((resolve, reject) => {
+    fs.readdir(directoryPath, (err, fileNames) => {
+      if (err) {
+        reject('Esto es un archivo');
+      } else {
+        console.log('Esto es un dirtectorio')
+        const markdownFiles = fileNames.filter((fileName) => {
+          const filePath = path.join(directoryPath, fileName);
+          return isMarkdownFile(filePath);
+        });
+        resolve(markdownFiles.map((fileName) => path.join(directoryPath, fileName)));
+      }
     });
-  } else {
-    console.log('No se encontraron enlaces en el archivo.');
-  }
+  });
 }
 
-//exportando en manera de objeto las funciones 
+function extractLinksFromDirectory(directoryPath) {
+  return getAllMarkdownFilesInDirectory(directoryPath)
+    .then((filePaths) => {
+      const promises = filePaths.map(async (filePath) => {
+        const content = await readMarkdownFile(filePath);
+        return findLinksInMarkdown(content, filePath);
+      });
+
+      return Promise.all(promises)
+      .then((results) => [].concat(...results))
+      .catch((error) => {
+        console.error(error);
+        throw error;
+      });
+  })
+  .catch((error) => {
+    console.error(error);
+    throw error;
+  });
+};
+//HITO 2
+//Funcion para validar con fetch un enlace
+const validateLink = (links) => {
+  const linkvalid = links.map((link) => {
+    return axios
+      .get(link.href)
+      .then((response) => {
+        if (response.status >= 200 && response.status < 400) {
+          return {
+            text: link.text,
+            href: link.href,
+            file: link.file,
+            status: response.status,
+            valid: "ok",
+          };
+        } else {
+          return {
+            href: link.href,
+            text: link.text,
+            file: link.file,
+            status: response.status,
+            valid: "fail",
+          };
+        }
+      })
+      .catch((error) => {
+        return {
+          href: link.href,
+          text: link.text,
+          file: link.file,
+          status: error.status === undefined ? "N/A" : error.status,
+          valid: "fail",
+        };
+      });
+  });
+  //console.log(linkvalid, 'mensaje')
+  return Promise.all(linkvalid);
+};
+
+//exportando en manera de objeto las funciones
 module.exports = {
   pathExist,
   isMarkdownFile,
   readMarkdownFile,
   isAbsolutePath,
   findLinksInMarkdown,
-  printLinks
+  validateLink,
+  extractLinksFromDirectory
 };

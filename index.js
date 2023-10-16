@@ -1,34 +1,45 @@
-const functions = require('./data.js');
+const functions = require("./data.js");
 
-const mdLinks = (path, validate) => {
-    return new Promise((resolve, reject) => {
-        //Existe la ruta?
-        if (functions.isAbsolutePath(path)) {
-            if (functions.pathExist(path)) {
-                if (!functions.isMarkdownFile(path)) {
-                    reject("El archivo no es un archivo Markdown.");
-                    return;
-                }
-                
-                functions.readMarkdownFile(path)
-                    .then(content => {
-                        const links = functions.findLinksInMarkdown(content);
-                        if (links.length > 0) {
-                            resolve(links); //Termina la promesa resuelta con los enlaces encontrados
-                        } else {
-                            reject("No se encontraron enlaces en el archivo.");
-                        }
-                    })
-                    .catch(error => {
-                        reject(`Error al leer el archivo: ${error}`);
-                    });
+const mdLinks = (inputPath, validate = false) => {
+  return new Promise((resolve, reject) => {
+    inputPath = functions.isAbsolutePath(inputPath)
+      if (functions.pathExist(inputPath)) {
+        functions
+          .extractLinksFromDirectory(inputPath)
+          .then((links) => {
+            if (validate) {
+              functions.validateLink(links).then((result) => resolve(result)); 
             } else {
-                console.log("La ruta no existe");
+              resolve(links);
             }
-        } else {
-            reject("La ruta no es absoluta");
-        }
-    })
-}
+          })
+          .catch(() => {
+            if (!functions.isMarkdownFile(inputPath)) {//si no es
+              reject("El archivo no es un archivo Markdown."); // Hacerle test***
+            } else { //pero si es
+              functions
+                .readMarkdownFile(inputPath)
+                .then((content) => {
+                  const links = functions.findLinksInMarkdown(content, inputPath);
+                  if (links.length === 0){
+                    reject('No se encontraron links en el archivo');
+                    return
+                  }
+                  if (validate) {
+                    functions.validateLink(links).then(result => resolve(result));
+                  } else {
+                    resolve(links);
+                    // Resuelve la promesa con los enlaces encontrados
+                  }
+                })
+            }
+          });
+      } else {
+        reject("La ruta no existe");
+      }
+  });
+};
 
 module.exports = mdLinks;
+//testear primero si es archivo, (respuesta resolve) despue si es directorio, los reject
+//un nuevo archivo para test de funciones de data.js aqui se mocck a axios solo cuando se hace la peticion 
